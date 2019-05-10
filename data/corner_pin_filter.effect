@@ -52,38 +52,22 @@ float4 bounds() {
 	return float4(x1, y1, x2, y2);
 }
 
+float lerp(float start, float end, float val)
+{
+    return start * (1- t) + end * t;
+}
+
 float2 invBilinear(float2 p)
 {
-	float2 tempUV = uv1;
-	if(tempUV.x == 0) { tempUV.x = -0.001; }
-    float2 e = uv2-tempUV;
-    float2 f = uv3-tempUV;
-    float2 g = tempUV-uv2+uv4-uv3;
-    float2 h = p-tempUV;
-        
-    float k2 = cross( g, f );
-    float k1 = cross( e, f ) + cross( h, g );
-    float k0 = cross( h, e );
+    float x1 = lerp(uv1.x,uv2.x, p.x);
+    float x2 = lerp(uv3.x,uv4.x, p.x);
+    float x = lerp(x1, x2, p.y);
     
-    float w = k1*k1 - 4.0*k0*k2;
-    
-    if( w<0.0 ) return float2(-1.0, -1.0);
-
-    w = sqrt( w );
-    
-    float v1 = (-k1 - w)/(2.0*k2);
-    float v2 = (-k1 + w)/(2.0*k2);
-    float u1 = (h.x - f.x*v1)/(e.x + g.x*v1);
-    float u2 = (h.x - f.x*v2)/(e.x + g.x*v2);
-    bool b1 = v1>0.0 && v1<1.0 && u1>0.0 && u1<1.0;
-    bool b2 = v2>0.0 && v2<1.0 && u2>0.0 && u2<1.0;
-    
-    float2 res = float2(-1.0, -1.0);
-
-    if(  b1 && !b2 ) res = float2( u1, v1 );
-    if( !b1 &&  b2 ) res = float2( u2, v2 );
-    
-    return res;
+    float y1 = lerp(uv1.y, uv3.y, p.y);
+    float y2 = lerp(uv2.y, uv4.y, p.y);
+    float y = lerp(y1,y2, p.x);
+	return p;
+    //return float2(x,y);    
 }
 
 VertData VSCorner(VertData v_in)
@@ -107,10 +91,7 @@ float4 PSCorner(VertData v_in) : TARGET
 		}
         return image.Sample(textureSampler,v_in.uv);
 	}
-	float4 resBounds = bounds();
-	if(v_in.uv.x < resBounds.x || v_in.uv.x > resBounds.z || v_in.uv.y < resBounds.y || v_in.uv.y > resBounds.w) {
-		return float4(0.0, 0.0, 0.0, 0.0);
-	}
+
 	float2 vert = invBilinear(v_in.uv);
 	return (image.Sample(textureSampler, vert)
 			+ image.Sample(textureSampler, float2(vert.x - (1.0 / texwidth / 2), vert.y))
