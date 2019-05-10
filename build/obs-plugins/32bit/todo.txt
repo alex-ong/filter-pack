@@ -1,0 +1,1 @@
+install latest qt, current one i built with is bugged and wont build 32-bit

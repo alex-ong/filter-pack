@@ -105,7 +105,6 @@ float4 PSCorner(VertData v_in) : TARGET
 		if(dist < 0.004){
 			return float4(0.2, 0.4, 0.8, (1 - (dist * 250)));
 		}
-        return image.Sample(textureSampler,v_in.uv);
 	}
 	float4 resBounds = bounds();
 	if(v_in.uv.x < resBounds.x || v_in.uv.x > resBounds.z || v_in.uv.y < resBounds.y || v_in.uv.y > resBounds.w) {
